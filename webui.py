@@ -39,7 +39,9 @@ def worker_process_queue():
                             [k for k in slider_data.keys() if k not in ('duration','top_k','top_p','temperature','cfg_coef','seed')])
             socketio.emit('status', {"prompt": prompt, "state": "started"})
             filename, json_filename = generate_audio(socketio, model_type, prompt, slider_data, melody_data)
-            socketio.emit('on_finish_audio', {"prompt": prompt, "filename": filename, "json_filename": json_filename})
+            # 结束耗时
+            elapsed = time.perf_counter() - start_ts
+            socketio.emit('on_finish_audio', {"prompt": prompt, "filename": filename, "json_filename": json_filename, "elapsed": round(elapsed, 2)})
             socketio.emit('status', {"prompt": prompt, "state": "finished"})
             app_logger.info('Job done model=%s file=%s json=%s elapsed=%.2fs', model_type, filename, json_filename, time.perf_counter()-start_ts)
         except Exception as e:

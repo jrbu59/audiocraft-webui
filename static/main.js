@@ -9,6 +9,15 @@ document.addEventListener("DOMContentLoaded", function() {
     initModes();
     initParamHints();
     initAdvancedPanel();
+    const btn = document.getElementById('overlay-close');
+    const ov = document.getElementById('prompt-overlay');
+    const mask = document.getElementById('overlay-mask');
+    if (btn){
+        btn.addEventListener('click', function(){
+            if (ov) ov.style.display = 'none';
+            if (mask) mask.style.display = 'none';
+        });
+    }
 });
 
 function submitSliders() {
@@ -250,7 +259,7 @@ socket.on('add_to_queue', function(data) {
 
 function addPromptToQueue(prompt_data) {
     const promptListDiv = document.querySelector('.prompt-queue');
-
+    if (!promptListDiv) return;
     const promptItemDiv = document.createElement('div');
     promptItemDiv.className = 'audio-item';
     promptItemDiv.setAttribute('completed-segments', '0');
@@ -269,9 +278,11 @@ function addPromptToQueue(prompt_data) {
 
 socket.on('on_finish_audio', function(data) {
     const promptListDiv = document.querySelector('.prompt-queue');
-    const firstPromptItem = promptListDiv.querySelector('.audio-item');
-    if (firstPromptItem) {
-        promptListDiv.removeChild(firstPromptItem);
+    if (promptListDiv) {
+        const firstPromptItem = promptListDiv.querySelector('.audio-item');
+        if (firstPromptItem) {
+            promptListDiv.removeChild(firstPromptItem);
+        }
     }
 
     addAudioToList(data.filename, data.json_filename);
@@ -294,6 +305,14 @@ function makeAudioElement(json_data, filename, use_reverse_ordering) {
     modelDiv.className = 'audio-item-text';
     modelDiv.textContent = `Model: ${json_data.model}`;
     parametersDiv.appendChild(modelDiv);
+
+    // 生成时间
+    if (json_data.generated_at) {
+        const timeDiv = document.createElement('div');
+        timeDiv.className = 'audio-item-text';
+        timeDiv.textContent = `Generated: ${json_data.generated_at}`;
+        parametersDiv.appendChild(timeDiv);
+    }
 
     for (const key in json_data.parameters) {
         const paramDiv = document.createElement('div');
@@ -342,11 +361,12 @@ socket.on('progress', function(data) {
     progress_value = data.progress * 100;
 
     const promptListDiv = document.querySelector('.prompt-queue');
-    const firstPromptItem = promptListDiv.querySelector('.audio-item');
-
-    if (firstPromptItem) {
-        firstPromptItem.style.background = `linear-gradient(to right, ${completionColor} ${progress_value}%, transparent ${progress_value}%)`;
-        firstPromptItem.querySelector('.audio-item-text').style.textShadow = '1px 3px 6px black';
+    if (promptListDiv) {
+        const firstPromptItem = promptListDiv.querySelector('.audio-item');
+        if (firstPromptItem) {
+            firstPromptItem.style.background = `linear-gradient(to right, ${completionColor} ${progress_value}%, transparent ${progress_value}%)`;
+            firstPromptItem.querySelector('.audio-item-text').style.textShadow = '1px 3px 6px black';
+        }
     }
     // 更新状态栏
     const statusFill = document.getElementById('status-fill');
@@ -354,6 +374,15 @@ socket.on('progress', function(data) {
     // 更新浮层进度与文本
     const oFill = document.getElementById('overlay-progress-fill');
     const oStat = document.getElementById('overlay-status');
+    const ov = document.getElementById('prompt-overlay');
+    const mask = document.getElementById('overlay-mask');
+    const ovTxt = document.getElementById('prompt-overlay-text');
+    // 确保浮层可见（防止 started 事件先丢失）
+    if (ov && mask && ov.style.display !== 'block'){
+        if (ovTxt) ovTxt.textContent = (window.__currentPrompt || document.getElementById('text').value || '');
+        ov.style.display = 'block';
+        mask.style.display = 'block';
+    }
     if (oFill) oFill.style.width = `${Math.min(100, Math.max(0, progress_value))}%`;
     if (oStat) oStat.textContent = `生成中 ${Math.floor(progress_value)}%`;
     // progress 阶段不再变更浮层，以避免闪烁
@@ -361,9 +390,6 @@ socket.on('progress', function(data) {
 
 // 简短状态与错误提示
 socket.on('status', function(data) {
-    const statusFill = document.getElementById('status-fill');
-    const statusText = document.getElementById('status-text');
-    if (!statusFill || !statusText) return;
     if (data.state === 'started') {
         const oFill = document.getElementById('overlay-progress-fill');
         const oStat = document.getElementById('overlay-status');
@@ -371,10 +397,13 @@ socket.on('status', function(data) {
         if (oStat) oStat.textContent = '开始生成';
         // 独立浮层：从后端的 data.prompt 显示，不插入主布局
         const ov = document.getElementById('prompt-overlay');
+        const mask = document.getElementById('overlay-mask');
         const ovTxt = document.getElementById('prompt-overlay-text');
         if (ov && ovTxt){
-            ovTxt.textContent = data.prompt || document.getElementById('text').value || '';
+            window.__currentPrompt = data.prompt || document.getElementById('text').value || '';
+            ovTxt.textContent = window.__currentPrompt;
             ov.style.display = 'block';
+            if (mask) mask.style.display = 'block';
         }
     } else if (data.state === 'finished') {
         const oFill = document.getElementById('overlay-progress-fill');
@@ -383,14 +412,18 @@ socket.on('status', function(data) {
         if (oStat) oStat.textContent = '完成';
         setTimeout(() => { if (oFill) oFill.style.width = '0%'; if (oStat) oStat.textContent = '就绪'; }, 1200);
         const ov = document.getElementById('prompt-overlay');
+        const mask = document.getElementById('overlay-mask');
         if (ov) ov.style.display = 'none';
+        if (mask) mask.style.display = 'none';
     } else if (data.state === 'error') {
         const oFill = document.getElementById('overlay-progress-fill');
         const oStat = document.getElementById('overlay-status');
         if (oStat) oStat.textContent = '出错';
         if (oFill) oFill.style.width = '0%';
         const ov = document.getElementById('prompt-overlay');
+        const mask = document.getElementById('overlay-mask');
         if (ov) ov.style.display = 'none';
+        if (mask) mask.style.display = 'none';
     }
 });
 

@@ -30,3 +30,38 @@ TypeError: MusicGen.set_generation_params() got an unexpected keyword argument '
 2025-12-01 21:07:26,877 INFO [app] Submit model=medium use_advanced=False prompt_len=261
 2025-12-01 21:07:26,879 INFO [app] Job start model=medium duration=30 top_k=250 top_p=0.67 temp=1.2 cfg=4.0 seed=None advKeys=[]
 2025-12-01 21:08:25,652 INFO [app] Job done model=medium file=static/audio/Prompt Folk-Pop Acoustic guitar strumming Drum kit Flute(11).wav json=static/audio/Prompt Folk-Pop Acoustic guitar strumming Drum kit Flute(11).json elapsed=58.77s
+2025-12-01 21:14:18,967 INFO [app] Submit model=medium use_advanced=False prompt_len=261
+2025-12-01 21:14:18,969 INFO [app] Job start model=medium duration=30 top_k=250 top_p=0.67 temp=1.2 cfg=4.0 seed=None advKeys=[]
+2025-12-01 21:15:19,250 INFO [app] Job done model=medium file=static/audio/Prompt Folk-Pop Acoustic guitar strumming Drum kit Flute(12).wav json=static/audio/Prompt Folk-Pop Acoustic guitar strumming Drum kit Flute(12).json elapsed=60.28s
+2025-12-01 21:16:32,954 INFO [app] Submit model=medium use_advanced=False prompt_len=261
+2025-12-01 21:16:32,955 INFO [app] Job start model=medium duration=30 top_k=250 top_p=0.67 temp=1.2 cfg=4.0 seed=None advKeys=[]
+2025-12-01 21:17:18,430 INFO [app] Job done model=medium file=static/audio/Prompt Folk-Pop Acoustic guitar strumming Drum kit Flute(13).wav json=static/audio/Prompt Folk-Pop Acoustic guitar strumming Drum kit Flute(13).json elapsed=45.47s
+2025-12-01 21:19:18,981 INFO [app] Submit model=medium use_advanced=False prompt_len=261
+2025-12-01 21:19:18,982 INFO [app] Job start model=medium duration=30 top_k=250 top_p=0.67 temp=1.2 cfg=4.0 seed=None advKeys=[]
+2025-12-01 21:20:40,740 INFO [app] Submit model=medium use_advanced=False prompt_len=261
+2025-12-01 21:20:40,741 INFO [app] Job start model=medium duration=30 top_k=250 top_p=0.67 temp=1.2 cfg=4.0 seed=None advKeys=[]
+2025-12-01 21:21:37,488 INFO [app] Job done model=medium file=static/audio/Prompt Folk-Pop Acoustic guitar strumming Drum kit Flute(14).wav json=static/audio/Prompt Folk-Pop Acoustic guitar strumming Drum kit Flute(14).json elapsed=56.75s
+2025-12-01 21:29:33,321 INFO [app] Submit model=medium use_advanced=False prompt_len=261
+2025-12-01 21:29:33,322 INFO [app] Job start model=medium duration=30 top_k=250 top_p=0.67 temp=1.2 cfg=4.0 seed=None advKeys=[]
+2025-12-01 21:30:29,191 INFO [app] Job done model=medium file=static/audio/Prompt Folk-Pop Acoustic guitar strumming Drum kit Flute(15).wav json=static/audio/Prompt Folk-Pop Acoustic guitar strumming Drum kit Flute(15).json elapsed=55.87s
+2025-12-01 21:34:18,932 INFO [app] Submit model=small use_advanced=False prompt_len=261
+2025-12-01 21:34:18,933 INFO [app] Job start model=small duration=30 top_k=250 top_p=0.67 temp=1.2 cfg=4.0 seed=None advKeys=[]
+2025-12-01 21:35:26,497 INFO [app] Job done model=small file=static/audio/Prompt Folk-Pop Acoustic guitar strumming Drum kit Flute(16).wav json=static/audio/Prompt Folk-Pop Acoustic guitar strumming Drum kit Flute(16).json elapsed=67.56s
+2025-12-01 21:35:40,545 INFO [app] Submit model=small use_advanced=False prompt_len=261
+2025-12-01 21:35:40,546 INFO [app] Job start model=small duration=30 top_k=250 top_p=0.67 temp=1.2 cfg=4.0 seed=None advKeys=[]
+2025-12-01 21:36:04,029 INFO [app] Job done model=small file=static/audio/Prompt Folk-Pop Acoustic guitar strumming Drum kit Flute(17).wav json=static/audio/Prompt Folk-Pop Acoustic guitar strumming Drum kit Flute(17).json elapsed=23.48s
+2025-12-01 21:36:56,709 INFO [app] Submit model=small use_advanced=False prompt_len=261
+2025-12-01 21:36:56,710 INFO [app] Job start model=small duration=30 top_k=250 top_p=0.67 temp=1.2 cfg=4.0 seed=None advKeys=[]
+2025-12-01 21:37:34,330 INFO [app] Job done model=small file=static/audio/Prompt Folk-Pop Acoustic guitar strumming Drum kit Flute(18).wav json=static/audio/Prompt Folk-Pop Acoustic guitar strumming Drum kit Flute(18).json elapsed=37.62s
+2025-12-01 21:43:15,582 INFO [app] Submit model=small use_advanced=False prompt_len=261
+2025-12-01 21:43:15,583 INFO [app] Job start model=small duration=30 top_k=250 top_p=0.67 temp=1.2 cfg=4.0 seed=None advKeys=[]
+2025-12-01 21:43:48,832 INFO [app] Job done model=small file=static/audio/Prompt Folk-Pop Acoustic guitar strumming Drum kit Flute(19).wav json=static/audio/Prompt Folk-Pop Acoustic guitar strumming Drum kit Flute(19).json elapsed=33.25s
+2025-12-01 21:46:35,114 INFO [app] Submit model=small use_advanced=False prompt_len=261
+2025-12-01 21:46:35,116 INFO [app] Job start model=small duration=30 top_k=250 top_p=0.67 temp=1.2 cfg=4.0 seed=None advKeys=[]
+2025-12-01 21:47:08,253 INFO [app] Job done model=small file=static/audio/Prompt Folk-Pop Acoustic guitar strumming Drum kit Flute(20).wav json=static/audio/Prompt Folk-Pop Acoustic guitar strumming Drum kit Flute(20).json elapsed=33.14s
+2025-12-01 21:51:55,603 INFO [app] Submit model=small use_advanced=False prompt_len=261
+2025-12-01 21:51:55,604 INFO [app] Job start model=small duration=30 top_k=250 top_p=0.67 temp=1.2 cfg=4.0 seed=None advKeys=[]
+2025-12-01 21:52:28,463 INFO [app] Job done model=small file=static/audio/Prompt Folk-Pop Acoustic guitar strumming Drum kit Flute(21).wav json=static/audio/Prompt Folk-Pop Acoustic guitar strumming Drum kit Flute(21).json elapsed=32.86s
+2025-12-01 22:09:05,301 INFO [app] Submit model=small use_advanced=True prompt_len=261
+2025-12-01 22:09:05,303 INFO [app] Job start model=small duration=30 top_k=250 top_p=0.67 temp=1.2 cfg=4.0 seed=None advKeys=['loudness_headroom_db', 'fade_ms', 'two_step_cfg', 'resample_44k']
+2025-12-01 22:09:38,614 INFO [app] Job done model=small file=static/audio/Prompt Folk-Pop Acoustic guitar strumming Drum kit Flute(22).wav json=static/audio/Prompt Folk-Pop Acoustic guitar strumming Drum kit Flute(22).json elapsed=33.31s

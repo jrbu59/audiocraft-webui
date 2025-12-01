@@ -32,16 +32,19 @@
         }
     </script>
     {% endmacro %}
-    <div class="container"></div>
-        <!-- 运行中 Prompt 浮层（含进度与状态） -->
-        <div id="prompt-overlay" class="prompt-overlay" style="display:none">
-            <div class="prompt-overlay-title">当前生成的提示词</div>
-            <div id="prompt-overlay-text" class="prompt-overlay-text"></div>
-            <div class="overlay-progress" aria-label="生成进度">
-                <div id="overlay-progress-fill" class="overlay-progress-fill" style="width:0%"></div>
-            </div>
-            <div id="overlay-status" class="overlay-status">就绪</div>
+    <!-- 背景遮罩与运行中 Prompt 浮层（含进度与状态） -->
+    <div id="overlay-mask" class="overlay-mask" style="display:none"></div>
+    <div id="prompt-overlay" class="prompt-overlay" style="display:none">
+        <button type="button" id="overlay-close" class="overlay-close" aria-label="关闭">×</button>
+        <div class="prompt-overlay-title">当前生成的提示词</div>
+        <div id="prompt-overlay-text" class="prompt-overlay-text"></div>
+        <div class="overlay-divider"></div>
+        <div class="overlay-progress" aria-label="生成进度">
+            <div id="overlay-progress-fill" class="overlay-progress-fill" style="width:0%"></div>
         </div>
+        <div id="overlay-status" class="overlay-status">就绪</div>
+    </div>
+    <div class="container">
         <div class="third-box">
 
             <div class="mode-switch">
@@ -117,8 +120,7 @@
                 <button type="button" class="submit-button" onclick="submitSliders()">Submit</button>
             </div>
         </div>
-
-        <div class="audio-list third-box"></div>   
+        <div class="audio-list third-box"></div>
     </div>
 
     <script src="{{ url_for('static', filename='main.js') }}"></script>

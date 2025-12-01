@@ -46,7 +46,13 @@ def sanitize_filename(filename: str, max_length: int = 80) -> str:
 def write_paired_json(model_type, filename, prompt, audio_gen_params):
     output_filename = f"{filename}.json"
 
-    write_data = {"model": model_type, "prompt": prompt, "parameters": audio_gen_params}
+    import time as _time
+    write_data = {
+        "model": model_type,
+        "prompt": prompt,
+        "parameters": audio_gen_params,
+        "generated_at": _time.strftime('%Y-%m-%d %H:%M:%S')
+    }
 
     with open(output_filename, 'w', encoding='utf-8') as outfile:
         json.dump(write_data, outfile, indent=4, ensure_ascii=False)
