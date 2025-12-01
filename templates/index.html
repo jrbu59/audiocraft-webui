@@ -12,7 +12,7 @@
 <body>
     {% macro slider_field(id, name, min_value, max_value, step_value, data) %}
     <div class="field param-field" data-param="{{ id }}">
-        <label for="{{ id }}">{{ name }} <span class="info-icon" data-target="{{ id }}" title="参数说明">ℹ</span></label>
+        <label for="{{ id }}">{{ name }} <span class="info-icon" data-target="{{ id }}">ℹ</span></label>
         <input type="range" id="{{ id }}" name="{{ name }}" min="{{ min_value }}" max="{{ max_value }}" step="{{ step_value }}" value="{{ data }}" oninput="updateSliderValue('{{ id }}', this.value)">
         <input type="text" id="{{ id }}-text" value="{{ data }}" class="slider-value" oninput="updateRangeValue('{{ id }}', this.value)">
     </div>
@@ -87,12 +87,12 @@
                 </div>
                 <div class="advanced-group">
                     <div class="field param-field" data-param="two_step_cfg">
-                        <label for="two_step_cfg">Two-step CFG <span class="info-icon" title="参数说明">ℹ</span></label>
+                        <label for="two_step_cfg">Two-step CFG <span class="info-icon">ℹ</span></label>
                         <input type="checkbox" id="two_step_cfg" />
                     </div>
 
                     <div class="field param-field" data-param="seed">
-                        <label for="seed">固定种子 <span class="info-icon" title="参数说明">ℹ</span></label>
+                        <label for="seed">固定种子 <span class="info-icon">ℹ</span></label>
                         <div class="seed-row">
                             <input type="checkbox" id="seed-fixed" checked/>
                             <input type="number" id="seed" placeholder="如 12345" class="seed-input" value="{{ default_seed }}" />
@@ -102,7 +102,7 @@
                     {{ slider_field('loudness_headroom_db', 'Loudness Headroom (dB)', 10, 24, 1, 18) }}
                     {{ slider_field('fade_ms', 'Fade In/Out (ms)', 0, 400, 10, 60) }}
                     <div class="field param-field" data-param="resample_44k">
-                        <label for="resample_44k">重采样到 44.1kHz <span class="info-icon" title="参数说明">ℹ</span></label>
+                        <label for="resample_44k">重采样到 44.1kHz <span class="info-icon">ℹ</span></label>
                         <input type="checkbox" id="resample_44k" />
                     </div>
                 </div>
