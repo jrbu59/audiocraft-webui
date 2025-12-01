@@ -1,6 +1,6 @@
 from .model_hijack import HijackedMusicGen
 from audiocraft.data.audio import audio_write
-import torch, re, os, json, unicodedata, hashlib
+import torch, re, os, json, unicodedata, hashlib, random
 
 MODEL = None
 
@@ -130,6 +130,12 @@ def generate_audio(socketio, model_type, prompt, audio_gen_params, melody_data):
         return
     
     params = dict(audio_gen_params)
+    # 默认随机种子逻辑：仅在高级设置传递了 seed 键时处理
+    if 'seed' in params:
+        seed_val = params.get('seed')
+        if seed_val in (None, '', 'null'):
+            # 生成一个随机种子并记录到参数中，便于复现与历史查看
+            params['seed'] = random.randint(0, 2**31 - 1)
     # 提取受支持的生成参数
     gen_kwargs = {
         'use_sampling': True,
@@ -140,7 +146,7 @@ def generate_audio(socketio, model_type, prompt, audio_gen_params, melody_data):
         'duration': int(float(params.get('duration', 30))) if params.get('duration') is not None else None,
         # 高级设置：仅当键存在才生效（前端折叠时不传）
         'two_step_cfg': bool(params['two_step_cfg']) if 'two_step_cfg' in params else None,
-        'seed': int(params['seed']) if 'seed' in params and params.get('seed') not in (None, '', 'null') else None,
+        'seed': int(params['seed']) if 'seed' in params else None,
     }
     # 清理 None，避免覆盖默认
     gen_kwargs = {k: v for k, v in gen_kwargs.items() if v is not None}
@@ -157,4 +163,5 @@ def generate_audio(socketio, model_type, prompt, audio_gen_params, melody_data):
     else:
         output = MODEL.generate(descriptions=[prompt], progress=True)
     
-    return write_audio(model_type, prompt, output, audio_gen_params)
+    # 将可能更新过的参数（含随机种子）写入配对 JSON
+    return write_audio(model_type, prompt, output, params)
