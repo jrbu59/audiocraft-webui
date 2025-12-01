@@ -24,3 +24,9 @@ TypeError: MusicGen.set_generation_params() got an unexpected keyword argument '
 2025-12-01 20:51:25,935 INFO [app] Submit model=medium use_advanced=True prompt_len=261
 2025-12-01 20:51:25,936 INFO [app] Job start model=medium duration=30 top_k=250 top_p=0.67 temp=1.2 cfg=4.0 seed=None advKeys=['loudness_headroom_db', 'fade_ms', 'two_step_cfg', 'resample_44k']
 2025-12-01 20:53:08,605 INFO [app] Job done model=medium file=static/audio/Prompt Folk-Pop Acoustic guitar strumming Drum kit Flute(9).wav json=static/audio/Prompt Folk-Pop Acoustic guitar strumming Drum kit Flute(9).json elapsed=102.67s
+2025-12-01 21:02:29,961 INFO [app] Submit model=medium use_advanced=False prompt_len=261
+2025-12-01 21:02:29,962 INFO [app] Job start model=medium duration=30 top_k=250 top_p=0.67 temp=1.2 cfg=4.0 seed=None advKeys=[]
+2025-12-01 21:03:28,581 INFO [app] Job done model=medium file=static/audio/Prompt Folk-Pop Acoustic guitar strumming Drum kit Flute(10).wav json=static/audio/Prompt Folk-Pop Acoustic guitar strumming Drum kit Flute(10).json elapsed=58.62s
+2025-12-01 21:07:26,877 INFO [app] Submit model=medium use_advanced=False prompt_len=261
+2025-12-01 21:07:26,879 INFO [app] Job start model=medium duration=30 top_k=250 top_p=0.67 temp=1.2 cfg=4.0 seed=None advKeys=[]
+2025-12-01 21:08:25,652 INFO [app] Job done model=medium file=static/audio/Prompt Folk-Pop Acoustic guitar strumming Drum kit Flute(11).wav json=static/audio/Prompt Folk-Pop Acoustic guitar strumming Drum kit Flute(11).json elapsed=58.77s

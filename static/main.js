@@ -351,18 +351,12 @@ socket.on('progress', function(data) {
     // 更新状态栏
     const statusFill = document.getElementById('status-fill');
     const statusText = document.getElementById('status-text');
-    if (statusFill) statusFill.style.width = `${Math.min(100, Math.max(0, progress_value))}%`;
-    if (statusText) statusText.textContent = `生成中 ${Math.floor(progress_value)}%`;
-    // 展示运行中 prompt 浮层
-    const ov = document.getElementById('prompt-overlay');
-    const ovTxt = document.getElementById('prompt-overlay-text');
-    if (ov && ovTxt && ov.style.display !== 'block'){
-        // 取队列中第一个 prompt 文本
-        const q = document.querySelector('.prompt-queue .audio-item-text');
-        const txt = q ? q.textContent : '';
-        ovTxt.textContent = txt;
-        ov.style.display = 'block';
-    }
+    // 更新浮层进度与文本
+    const oFill = document.getElementById('overlay-progress-fill');
+    const oStat = document.getElementById('overlay-status');
+    if (oFill) oFill.style.width = `${Math.min(100, Math.max(0, progress_value))}%`;
+    if (oStat) oStat.textContent = `生成中 ${Math.floor(progress_value)}%`;
+    // progress 阶段不再变更浮层，以避免闪烁
 });
 
 // 简短状态与错误提示
@@ -371,8 +365,11 @@ socket.on('status', function(data) {
     const statusText = document.getElementById('status-text');
     if (!statusFill || !statusText) return;
     if (data.state === 'started') {
-        statusFill.style.width = '2%';
-        statusText.textContent = '开始生成';
+        const oFill = document.getElementById('overlay-progress-fill');
+        const oStat = document.getElementById('overlay-status');
+        if (oFill) oFill.style.width = '2%';
+        if (oStat) oStat.textContent = '开始生成';
+        // 独立浮层：从后端的 data.prompt 显示，不插入主布局
         const ov = document.getElementById('prompt-overlay');
         const ovTxt = document.getElementById('prompt-overlay-text');
         if (ov && ovTxt){
@@ -380,14 +377,18 @@ socket.on('status', function(data) {
             ov.style.display = 'block';
         }
     } else if (data.state === 'finished') {
-        statusFill.style.width = '100%';
-        statusText.textContent = '完成';
-        setTimeout(() => { statusFill.style.width = '0%'; statusText.textContent = '就绪'; }, 1200);
+        const oFill = document.getElementById('overlay-progress-fill');
+        const oStat = document.getElementById('overlay-status');
+        if (oFill) oFill.style.width = '100%';
+        if (oStat) oStat.textContent = '完成';
+        setTimeout(() => { if (oFill) oFill.style.width = '0%'; if (oStat) oStat.textContent = '就绪'; }, 1200);
         const ov = document.getElementById('prompt-overlay');
         if (ov) ov.style.display = 'none';
     } else if (data.state === 'error') {
-        statusText.textContent = '出错';
-        statusFill.style.width = '0%';
+        const oFill = document.getElementById('overlay-progress-fill');
+        const oStat = document.getElementById('overlay-status');
+        if (oStat) oStat.textContent = '出错';
+        if (oFill) oFill.style.width = '0%';
         const ov = document.getElementById('prompt-overlay');
         if (ov) ov.style.display = 'none';
     }

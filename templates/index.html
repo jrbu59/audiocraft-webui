@@ -33,15 +33,14 @@
     </script>
     {% endmacro %}
     <div class="container"></div>
-        <!-- 状态栏 -->
-        <div class="status-bar" id="status-bar">
-            <div class="status-fill" id="status-fill" style="width:0%"></div>
-            <div class="status-text" id="status-text">就绪</div>
-        </div>
-        <!-- 运行中 Prompt 浮层 -->
+        <!-- 运行中 Prompt 浮层（含进度与状态） -->
         <div id="prompt-overlay" class="prompt-overlay" style="display:none">
             <div class="prompt-overlay-title">当前生成的提示词</div>
             <div id="prompt-overlay-text" class="prompt-overlay-text"></div>
+            <div class="overlay-progress" aria-label="生成进度">
+                <div id="overlay-progress-fill" class="overlay-progress-fill" style="width:0%"></div>
+            </div>
+            <div id="overlay-status" class="overlay-status">就绪</div>
         </div>
         <div class="third-box">
 
@@ -119,7 +118,6 @@
             </div>
         </div>
 
-        <div class="prompt-queue third-box"></div>
         <div class="audio-list third-box"></div>   
     </div>
 
