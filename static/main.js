@@ -353,6 +353,16 @@ socket.on('progress', function(data) {
     const statusText = document.getElementById('status-text');
     if (statusFill) statusFill.style.width = `${Math.min(100, Math.max(0, progress_value))}%`;
     if (statusText) statusText.textContent = `生成中 ${Math.floor(progress_value)}%`;
+    // 展示运行中 prompt 浮层
+    const ov = document.getElementById('prompt-overlay');
+    const ovTxt = document.getElementById('prompt-overlay-text');
+    if (ov && ovTxt && ov.style.display !== 'block'){
+        // 取队列中第一个 prompt 文本
+        const q = document.querySelector('.prompt-queue .audio-item-text');
+        const txt = q ? q.textContent : '';
+        ovTxt.textContent = txt;
+        ov.style.display = 'block';
+    }
 });
 
 // 简短状态与错误提示
@@ -363,13 +373,23 @@ socket.on('status', function(data) {
     if (data.state === 'started') {
         statusFill.style.width = '2%';
         statusText.textContent = '开始生成';
+        const ov = document.getElementById('prompt-overlay');
+        const ovTxt = document.getElementById('prompt-overlay-text');
+        if (ov && ovTxt){
+            ovTxt.textContent = data.prompt || document.getElementById('text').value || '';
+            ov.style.display = 'block';
+        }
     } else if (data.state === 'finished') {
         statusFill.style.width = '100%';
         statusText.textContent = '完成';
         setTimeout(() => { statusFill.style.width = '0%'; statusText.textContent = '就绪'; }, 1200);
+        const ov = document.getElementById('prompt-overlay');
+        if (ov) ov.style.display = 'none';
     } else if (data.state === 'error') {
         statusText.textContent = '出错';
         statusFill.style.width = '0%';
+        const ov = document.getElementById('prompt-overlay');
+        if (ov) ov.style.display = 'none';
     }
 });
 

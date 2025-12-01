@@ -138,8 +138,9 @@ textarea {
 }
 
 .container {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
     padding: 10px;
     height: 95vh;
 }
@@ -151,7 +152,7 @@ textarea {
     border-radius: 1em;
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
     background-color: var(--kitten);
-    min-width: 33vw;
+    min-width: auto;
     height: 95vh;
     align-content: center;
     display: grid;
@@ -317,6 +318,7 @@ textarea {
 .audio-item-text {
     max-width: 90%;
     overflow-wrap: break-word;
+    white-space: pre-wrap; /* 保留换行 */
     text-align: left;
 }
 

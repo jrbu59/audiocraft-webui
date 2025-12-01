@@ -38,6 +38,11 @@
             <div class="status-fill" id="status-fill" style="width:0%"></div>
             <div class="status-text" id="status-text">就绪</div>
         </div>
+        <!-- 运行中 Prompt 浮层 -->
+        <div id="prompt-overlay" class="prompt-overlay" style="display:none">
+            <div class="prompt-overlay-title">当前生成的提示词</div>
+            <div id="prompt-overlay-text" class="prompt-overlay-text"></div>
+        </div>
         <div class="third-box">
 
             <div class="mode-switch">
@@ -94,7 +99,7 @@
                     <div class="field param-field" data-param="seed">
                         <label for="seed">固定种子 <span class="info-icon">ℹ</span></label>
                         <div class="seed-row">
-                            <input type="checkbox" id="seed-fixed" checked/>
+                            <input type="checkbox" id="seed-fixed"/>
                             <input type="number" id="seed" placeholder="如 12345" class="seed-input" value="{{ default_seed }}" />
                         </div>
                     </div>
