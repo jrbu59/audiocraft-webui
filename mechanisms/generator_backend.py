@@ -70,15 +70,47 @@ def write_audio(model_type, prompt, audio, audio_gen_params):
         output_filename = f"{base_filename}({i}).wav"
         i += 1
 
+    # 应用淡入淡出
+    fade_ms = int(float(audio_gen_params.get('fade_ms', 0) or 0))
+    wav = audio_tensors.squeeze()
+    if fade_ms and fade_ms > 0:
+        n = int(sample_rate * (fade_ms / 1000.0))
+        if n > 0 and wav.numel() > 2 * n:
+            # 线性淡入淡出
+            import torch as _torch
+            ramp = _torch.linspace(0, 1, steps=n)
+            wav[:n] = wav[:n] * ramp
+            wav[-n:] = wav[-n:] * ramp.flip(0)
+
+    # 写文件（响度处理可调）
     audio_write(
         output_filename,
-        audio_tensors.squeeze(),
+        wav,
         sample_rate,
         strategy="loudness",
         loudness_headroom_db=float(audio_gen_params.get('loudness_headroom_db', 18)),
         loudness_compressor=True,
         add_suffix=False,
     )
+
+    # 可选重采样到 44.1kHz：生成完成后使用 torchaudio 重采样
+    try:
+        import torchaudio as _ta
+        if bool(audio_gen_params.get('resample_44k', False)):
+            resample_sr = 44100
+            resampled = _ta.functional.resample(wav.unsqueeze(0), sample_rate, resample_sr)
+            # 覆盖原文件为 44.1kHz
+            audio_write(
+                output_filename,
+                resampled.squeeze(0),
+                resample_sr,
+                strategy="loudness",
+                loudness_headroom_db=float(audio_gen_params.get('loudness_headroom_db', 18)),
+                loudness_compressor=True,
+                add_suffix=False,
+            )
+    except Exception:
+        pass
 
     json_filename = write_paired_json(
         model_type,

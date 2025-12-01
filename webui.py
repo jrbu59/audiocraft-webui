@@ -73,6 +73,10 @@ def handle_submit_sliders(json):
             typed_slider_data[key] = int(value) if value is not None else None
         elif key == 'loudness_headroom_db':
             typed_slider_data[key] = float(value)
+        elif key == 'fade_ms':
+            typed_slider_data[key] = int(float(value))
+        elif key == 'resample_44k':
+            typed_slider_data[key] = bool(int(value))
         else:
             # 兜底为 float
             try:
@@ -167,6 +171,7 @@ def index():
     temperature = 1.2
     default_model = "large"
     default_text = ""
+    default_seed = 123456
     return render_template('index.html', 
                            topk=topk, 
                            duration=duration, 
@@ -174,7 +179,8 @@ def index():
                            topp=topp, 
                            temperature=temperature, 
                            default_model=default_model,
-                           default_text=default_text)
+                           default_text=default_text,
+                           default_seed=default_seed)
 
 if __name__ == '__main__':
     if not os.path.exists('static/audio'):

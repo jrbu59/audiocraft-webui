@@ -180,9 +180,9 @@ textarea {
 .field label {
     display: block;
     margin-bottom: 0.5em;
-    color: var(--light-text-color); 
-    font-size: 1.5em;
-    font-weight: 500;
+    color: var(--light-text-color);
+    font-size: 1em; /* 与整体一致 */
+    font-weight: 600; /* 加粗即可 */
 }
 
 /* 参数说明样式 */

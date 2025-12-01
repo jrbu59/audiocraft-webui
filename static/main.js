@@ -28,6 +28,8 @@ function submitSliders() {
     const seedVal = document.getElementById('seed').value;
     slidersData['seed'] = seedFixed && seedVal !== '' ? parseInt(seedVal, 10) : null;
     slidersData['loudness_headroom_db'] = parseFloat(document.getElementById('loudness_headroom_db-text').value || '18');
+    slidersData['fade_ms'] = parseInt(document.getElementById('fade_ms-text').value || '60', 10);
+    slidersData['resample_44k'] = document.getElementById('resample_44k').checked ? 1 : 0;
 
     if (!isMelodyMode) {
         var modelSelector = document.getElementById('modelSelector')
@@ -156,6 +158,14 @@ function initParamHints(){
         loudness_headroom_db: {
             desc: '响度预留，越小越响但风险失真，越大更稳。',
             recommend: '推荐: 16–18dB'
+        },
+        fade_ms: {
+            desc: '生成音频首尾淡入淡出长度，可减少爆音/点击声。',
+            recommend: '推荐: 40–100ms'
+        },
+        resample_44k: {
+            desc: '将输出从 32kHz 重采样到 44.1kHz，兼容性更好但有轻微重采样损耗。',
+            recommend: '推荐: 需要时开启'
         }
     };
 
