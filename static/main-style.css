@@ -217,6 +217,21 @@ textarea {
     border: 0px;
 }
 
+/* 高级设置布局 */
+.advanced-panel { 
+    margin-top: 8px; 
+    border: 1px dashed var(--hamster); 
+    border-radius: 8px; 
+    padding: 10px;
+}
+.advanced-group {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+.seed-row { display: flex; gap: 8px; align-items: center; }
+.seed-input { max-width: 120px; }
+
 #text {
     background-color: var(--kitten); /* Light grey; replace with any color you like */
     border-width: 1px;

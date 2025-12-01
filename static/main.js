@@ -22,6 +22,13 @@ function submitSliders() {
         slidersData[slider.id] = slider.value;
     });
 
+    // 高级参数
+    slidersData['two_step_cfg'] = document.getElementById('two_step_cfg').checked ? 1 : 0;
+    const seedFixed = document.getElementById('seed-fixed').checked;
+    const seedVal = document.getElementById('seed').value;
+    slidersData['seed'] = seedFixed && seedVal !== '' ? parseInt(seedVal, 10) : null;
+    slidersData['loudness_headroom_db'] = parseFloat(document.getElementById('loudness_headroom_db-text').value || '18');
+
     if (!isMelodyMode) {
         var modelSelector = document.getElementById('modelSelector')
         var modelSize = modelSelector.value;
@@ -137,6 +144,18 @@ function initParamHints(){
         duration: {
             desc: '生成时长（秒）。越长耗时和显存越高。',
             recommend: '推荐: 10–30s 试验，满意后再加长'
+        },
+        two_step_cfg: {
+            desc: '启用两阶段 CFG，通常更贴合提示词，耗时略增。',
+            recommend: '推荐: 关闭; 想强化提示遵循时可开启'
+        },
+        seed: {
+            desc: '固定随机种子以复现实验结果；不固定更具多样性。',
+            recommend: '推荐: 先随机，满意后记录种子'
+        },
+        loudness_headroom_db: {
+            desc: '响度预留，越小越响但风险失真，越大更稳。',
+            recommend: '推荐: 16–18dB'
         }
     };
 

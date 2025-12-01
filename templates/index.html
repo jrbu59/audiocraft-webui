@@ -80,6 +80,26 @@
                 </div>
             </div>
 
+            <div class="advanced-panel">
+                <div class="panel-title">高级设置</div>
+                <div class="advanced-group">
+                    <div class="field param-field" data-param="two_step_cfg">
+                        <label for="two_step_cfg">Two-step CFG <span class="info-icon" title="参数说明">ℹ</span></label>
+                        <input type="checkbox" id="two_step_cfg" />
+                    </div>
+
+                    <div class="field param-field" data-param="seed">
+                        <label for="seed">固定种子 <span class="info-icon" title="参数说明">ℹ</span></label>
+                        <div class="seed-row">
+                            <input type="checkbox" id="seed-fixed" />
+                            <input type="number" id="seed" placeholder="如 12345" class="seed-input" />
+                        </div>
+                    </div>
+
+                    {{ slider_field('loudness_headroom_db', 'Loudness Headroom (dB)', 10, 24, 1, 18) }}
+                </div>
+            </div>
+
             <div class="submit-container">
                 <textarea id="text" name="text" rows="3" required="">{{ default_text }}</textarea>
                 <button type="button" class="submit-button" onclick="submitSliders()">Submit</button>

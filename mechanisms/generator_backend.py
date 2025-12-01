@@ -75,7 +75,7 @@ def write_audio(model_type, prompt, audio, audio_gen_params):
         audio_tensors.squeeze(),
         sample_rate,
         strategy="loudness",
-        loudness_headroom_db=18,
+        loudness_headroom_db=float(audio_gen_params.get('loudness_headroom_db', 18)),
         loudness_compressor=True,
         add_suffix=False,
     )
@@ -97,10 +97,21 @@ def generate_audio(socketio, model_type, prompt, audio_gen_params, melody_data):
         print("Couldn't load model.")
         return
     
-    MODEL.set_generation_params(
-        use_sampling=True,
-        **audio_gen_params,
-    )
+    params = dict(audio_gen_params)
+    # 提取受支持的生成参数
+    gen_kwargs = {
+        'use_sampling': True,
+        'top_k': int(params.get('top_k', 250)) if params.get('top_k') is not None else None,
+        'top_p': float(params.get('top_p', 0.67)) if params.get('top_p') is not None else None,
+        'temperature': float(params.get('temperature', 1.2)) if params.get('temperature') is not None else None,
+        'cfg_coef': float(params.get('cfg_coef', 4.0)) if params.get('cfg_coef') is not None else None,
+        'duration': int(float(params.get('duration', 30))) if params.get('duration') is not None else None,
+        'two_step_cfg': bool(params.get('two_step_cfg', False)),
+        'seed': int(params['seed']) if params.get('seed') not in (None, '', 'null') else None,
+    }
+    # 清理 None，避免覆盖默认
+    gen_kwargs = {k: v for k, v in gen_kwargs.items() if v is not None}
+    MODEL.set_generation_params(**gen_kwargs)
     
     if melody_data is not None:
         melody, melody_sr = melody_data

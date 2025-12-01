@@ -60,7 +60,25 @@ def handle_submit_sliders(json):
     if not prompt:
         return
     
-    slider_data = {key: float(value) for key, value in slider_data.items()}
+    # 将滑块参数转换为合适类型
+    typed_slider_data = {}
+    for key, value in slider_data.items():
+        if key in ('top_p', 'temperature', 'cfg_coef'):
+            typed_slider_data[key] = float(value)
+        elif key in ('duration', 'top_k'):
+            typed_slider_data[key] = int(float(value))
+        elif key == 'two_step_cfg':
+            typed_slider_data[key] = bool(int(value))
+        elif key == 'seed':
+            typed_slider_data[key] = int(value) if value is not None else None
+        elif key == 'loudness_headroom_db':
+            typed_slider_data[key] = float(value)
+        else:
+            # 兜底为 float
+            try:
+                typed_slider_data[key] = float(value)
+            except:
+                typed_slider_data[key] = value
     
     melody_data = None
     
@@ -81,9 +99,9 @@ def handle_submit_sliders(json):
             return
         melody_data = torchaudio.load(local_path)
 
-    save_last_gen_settings(model_type, prompt, slider_data)
+    save_last_gen_settings(model_type, prompt, typed_slider_data)
     socketio.emit('add_to_queue', {"prompt": prompt})
-    pending_queue.put((model_type, prompt, slider_data, melody_data))
+    pending_queue.put((model_type, prompt, typed_slider_data, melody_data))
     
 @socketio.on('connect')
 def handle_connect():
