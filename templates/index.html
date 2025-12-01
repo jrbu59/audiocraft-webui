@@ -80,8 +80,11 @@
                 </div>
             </div>
 
-            <div class="advanced-panel">
-                <div class="panel-title">高级设置</div>
+            <div class="advanced-panel collapsed" id="advanced-panel">
+                <div class="advanced-header" id="advanced-header">
+                    <div><span class="adv-arrow">▶</span><span class="panel-title">高级设置</span></div>
+                    <button type="button" class="reset-btn" id="reset-adv">重置为推荐值</button>
+                </div>
                 <div class="advanced-group">
                     <div class="field param-field" data-param="two_step_cfg">
                         <label for="two_step_cfg">Two-step CFG <span class="info-icon" title="参数说明">ℹ</span></label>
@@ -106,7 +109,7 @@
             </div>
 
             <div class="submit-container">
-                <textarea id="text" name="text" rows="3" required="">{{ default_text }}</textarea>
+                <textarea id="text" name="text" rows="5" required="">{{ default_text }}</textarea>
                 <button type="button" class="submit-button" onclick="submitSliders()">Submit</button>
             </div>
         </div>

@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", function() {
     });
     initModes();
     initParamHints();
+    initAdvancedPanel();
 });
 
 function submitSliders() {
@@ -122,6 +123,39 @@ function initModes(){
             if (uploadCheck) uploadCheck.style.display = 'none';
         }
     });
+}
+
+function initAdvancedPanel(){
+    const panel = document.getElementById('advanced-panel');
+    const header = document.getElementById('advanced-header');
+    const resetBtn = document.getElementById('reset-adv');
+    if (!panel || !header || !resetBtn) return;
+    header.addEventListener('click', () => {
+        panel.classList.toggle('collapsed');
+    });
+    resetBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // 推荐值重置
+        setSlider('top_k', 250);
+        setSlider('top_p', 0.67);
+        setSlider('temperature', 1.2);
+        setSlider('cfg_coef', 4.0);
+        setSlider('duration', 30);
+        document.getElementById('two_step_cfg').checked = false;
+        document.getElementById('seed-fixed').checked = true;
+        // 保留当前种子数值不变
+        setSlider('loudness_headroom_db', 18);
+        setSlider('fade_ms', 60);
+        document.getElementById('resample_44k').checked = false;
+        setStatusText('已重置为推荐值');
+    });
+}
+
+function setSlider(id, val){
+    const range = document.getElementById(id);
+    const text = document.getElementById(id+'-text');
+    if (range) range.value = val;
+    if (text) text.value = val;
 }
 
 // 参数说明提示

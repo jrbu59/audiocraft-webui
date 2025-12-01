@@ -68,7 +68,7 @@ body {
 
 select {
     color: var(--jellyfish);
-    font-size: 18px;
+    font-size: 1em; /* 与整体一致 */
 }
 
 textarea {
@@ -223,6 +223,25 @@ textarea {
     border: 1px dashed var(--hamster); 
     border-radius: 8px; 
     padding: 10px;
+}
+.advanced-panel.collapsed .advanced-group { display: none; }
+.advanced-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    cursor: pointer;
+}
+.advanced-header .panel-title { margin: 0; }
+.adv-arrow { transition: transform .2s ease; display: inline-block; margin-right: 6px; }
+.advanced-panel:not(.collapsed) .adv-arrow { transform: rotate(90deg); }
+.reset-btn { 
+    border: 1px solid var(--cuttlefish); 
+    background: transparent; 
+    color: var(--cuttlefish); 
+    border-radius: 6px; 
+    padding: 4px 8px; 
+    cursor: pointer; 
 }
 .advanced-group {
     display: grid;
