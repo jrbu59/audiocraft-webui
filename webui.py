@@ -1,6 +1,7 @@
 from flask_socketio import SocketIO, emit
 from flask import Flask, render_template, request, jsonify, send_from_directory
-import logging, os, queue, threading, json
+import logging, os, queue, threading, json, time
+from logging.handlers import RotatingFileHandler
 from urllib.parse import urlparse
 import torchaudio
 from mechanisms.generator_backend import generate_audio
@@ -12,18 +13,40 @@ logging.getLogger().setLevel(logging.ERROR)
 logging.getLogger('engineio').setLevel(logging.ERROR)
 logging.getLogger('socketio').setLevel(logging.ERROR)
 
+# 日志文件配置（轮转日志）
+def setup_logging():
+    os.makedirs('logs', exist_ok=True)
+    logger = logging.getLogger('app')
+    logger.setLevel(logging.INFO)
+    if not any(isinstance(h, RotatingFileHandler) for h in logger.handlers):
+        fh = RotatingFileHandler('logs/app.log', maxBytes=5*1024*1024, backupCount=3, encoding='utf-8')
+        fmt = logging.Formatter('%(asctime)s %(levelname)s [%(name)s] %(message)s')
+        fh.setFormatter(fmt)
+        logger.addHandler(fh)
+    return logger
+
+app_logger = setup_logging()
+
 def worker_process_queue():
     while True:
         model_type, prompt, slider_data, melody_data = pending_queue.get()
         try:
+            start_ts = time.perf_counter()
+            app_logger.info('Job start model=%s duration=%s top_k=%s top_p=%s temp=%s cfg=%s seed=%s advKeys=%s',
+                            model_type,
+                            slider_data.get('duration'), slider_data.get('top_k'), slider_data.get('top_p'),
+                            slider_data.get('temperature'), slider_data.get('cfg_coef'), slider_data.get('seed'),
+                            [k for k in slider_data.keys() if k not in ('duration','top_k','top_p','temperature','cfg_coef','seed')])
             socketio.emit('status', {"prompt": prompt, "state": "started"})
             filename, json_filename = generate_audio(socketio, model_type, prompt, slider_data, melody_data)
             socketio.emit('on_finish_audio', {"prompt": prompt, "filename": filename, "json_filename": json_filename})
             socketio.emit('status', {"prompt": prompt, "state": "finished"})
+            app_logger.info('Job done model=%s file=%s json=%s elapsed=%.2fs', model_type, filename, json_filename, time.perf_counter()-start_ts)
         except Exception as e:
             # 简短错误提示
-            socketio.emit('error', {"prompt": prompt, "message": str(e)[:200]})
+            socketio.emit('gen_error', {"prompt": prompt, "message": str(e)[:200]})
             socketio.emit('status', {"prompt": prompt, "state": "error"})
+            app_logger.exception('Job failed model=%s prompt=%s error=%s', model_type, prompt, e)
         finally:
             pending_queue.task_done()
         
@@ -58,6 +81,7 @@ def handle_submit_sliders(json):
     prompt = json['prompt']
     model_type = json['model']
     use_advanced = bool(int(json.get('use_advanced', 0)))
+    app_logger.info('Submit model=%s use_advanced=%s prompt_len=%s', model_type, use_advanced, len(prompt or ''))
     if not prompt:
         return
     
@@ -91,18 +115,22 @@ def handle_submit_sliders(json):
     # Melody 模式后端校验：必须有有效文件
     if model_type == 'melody':
         if not melody_url:
-            socketio.emit('error', {"prompt": prompt, "message": "请先上传旋律音频"})
+            socketio.emit('gen_error', {"prompt": prompt, "message": "请先上传旋律音频"})
+            app_logger.warning('Melody missing for model=melody')
             return
         # 将 URL 转成本地相对路径并限制到 static/temp 目录
         parsed = urlparse(melody_url)
         local_path = parsed.path.lstrip('/') if parsed.scheme else melody_url
         if not local_path.startswith('static/temp/'):
-            socketio.emit('error', {"prompt": prompt, "message": "旋律路径不合法"})
+            socketio.emit('gen_error', {"prompt": prompt, "message": "旋律路径不合法"})
+            app_logger.warning('Melody path invalid: %s', local_path)
             return
         if not os.path.exists(local_path):
-            socketio.emit('error', {"prompt": prompt, "message": "旋律文件不存在"})
+            socketio.emit('gen_error', {"prompt": prompt, "message": "旋律文件不存在"})
+            app_logger.warning('Melody file not found: %s', local_path)
             return
         melody_data = torchaudio.load(local_path)
+        app_logger.info('Melody loaded: %s', local_path)
 
     # 若用户未展开高级设置，则忽略高级参数
     if not use_advanced:
@@ -138,6 +166,7 @@ def get_audio_json_pairs(directory):
 @app.route('/upload_melody', methods=['POST'])
 def upload_audio():
     dir = "static/temp"
+    os.makedirs(dir, exist_ok=True)
     for filename in os.listdir(dir):
         file_path = os.path.join(dir, filename)
         if os.path.isfile(file_path) or os.path.islink(file_path):
@@ -152,6 +181,7 @@ def upload_audio():
         filename = file.filename
         file_path = os.path.join(dir, filename)
         file.save(file_path)
+        app_logger.info('Melody uploaded: %s', file_path)
         return jsonify({'filePath': file_path}), 200
 
 @app.route('/')

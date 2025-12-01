@@ -373,7 +373,8 @@ socket.on('status', function(data) {
     }
 });
 
-socket.on('error', function(data) {
+// 生成相关错误（避免和 window.onerror 冲突）
+socket.on('gen_error', function(data) {
     const statusText = document.getElementById('status-text');
     if (statusText) statusText.textContent = `错误: ${data.message}`;
     // 可选：弹窗提示

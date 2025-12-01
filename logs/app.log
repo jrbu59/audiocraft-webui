@@ -1,0 +1,23 @@
+2025-12-01 20:48:35,345 INFO [app] Submit model=medium use_advanced=True prompt_len=261
+2025-12-01 20:48:35,345 INFO [app] Job start model=medium duration=30 top_k=250 top_p=0.67 temp=1.2 cfg=4.0 seed=None advKeys=['loudness_headroom_db', 'fade_ms', 'two_step_cfg', 'resample_44k']
+2025-12-01 20:48:47,357 ERROR [app] Job failed model=medium prompt=这是一个侧重于青春、阳光、友谊的流行民谣风格提示词：
+
+提示词 (Prompt): 一首充满青春活力的校园歌曲伴奏。 风格为清新流行民谣 (Folk-Pop)，中速节奏，带有积极向上的阳光情绪。
+
+主要乐器:
+
+清晰温暖的木吉他扫弦 (Acoustic guitar strumming)
+
+轻盈跳跃的钢琴和弦
+
+简单利落的鼓组 (Drum kit)
+
+偶尔加入一段柔和悠扬的长笛 (Flute) 旋律，增添诗意。
+
+氛围要求: 整体感觉要像夏日午后，回忆在操场上和教室里的美好时光，旋律朗朗上口，令人感到怀旧又充满希望。 error=MusicGen.set_generation_params() got an unexpected keyword argument 'seed'
+Traceback (most recent call last):
+  File "/home/jiarui/software/audiocraft-webui/webui.py", line 41, in worker_process_queue
+    filename, json_filename = generate_audio(socketio, model_type, prompt, slider_data, melody_data)
+  File "/home/jiarui/software/audiocraft-webui/mechanisms/generator_backend.py", line 153, in generate_audio
+    MODEL.set_generation_params(**gen_kwargs)
+TypeError: MusicGen.set_generation_params() got an unexpected keyword argument 'seed'

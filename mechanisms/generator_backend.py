@@ -146,11 +146,26 @@ def generate_audio(socketio, model_type, prompt, audio_gen_params, melody_data):
         'duration': int(float(params.get('duration', 30))) if params.get('duration') is not None else None,
         # 高级设置：仅当键存在才生效（前端折叠时不传）
         'two_step_cfg': bool(params['two_step_cfg']) if 'two_step_cfg' in params else None,
-        'seed': int(params['seed']) if 'seed' in params else None,
     }
     # 清理 None，避免覆盖默认
     gen_kwargs = {k: v for k, v in gen_kwargs.items() if v is not None}
     MODEL.set_generation_params(**gen_kwargs)
+
+    # 设定随机种子（若提供），而不是传入 set_generation_params
+    if 'seed' in params:
+        s = int(params['seed'])
+        try:
+            torch.manual_seed(s)
+            torch.cuda.manual_seed_all(s)
+        except Exception:
+            # CPU-only 情况
+            torch.manual_seed(s)
+        try:
+            import numpy as _np
+            _np.random.seed(s)
+        except Exception:
+            pass
+        random.seed(s)
     
     if melody_data is not None:
         melody, melody_sr = melody_data
