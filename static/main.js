@@ -22,20 +22,22 @@ function submitSliders() {
     document.querySelectorAll('input[type="range"]').forEach(function(slider) {
         slidersData[slider.id] = slider.value;
     });
-
-    // 高级参数
-    slidersData['two_step_cfg'] = document.getElementById('two_step_cfg').checked ? 1 : 0;
-    const seedFixed = document.getElementById('seed-fixed').checked;
-    const seedVal = document.getElementById('seed').value;
-    slidersData['seed'] = seedFixed && seedVal !== '' ? parseInt(seedVal, 10) : null;
-    slidersData['loudness_headroom_db'] = parseFloat(document.getElementById('loudness_headroom_db-text').value || '18');
-    slidersData['fade_ms'] = parseInt(document.getElementById('fade_ms-text').value || '60', 10);
-    slidersData['resample_44k'] = document.getElementById('resample_44k').checked ? 1 : 0;
+    // 是否启用高级设置（面板展开时生效）
+    const useAdvanced = !document.getElementById('advanced-panel').classList.contains('collapsed');
+    if (useAdvanced){
+        slidersData['two_step_cfg'] = document.getElementById('two_step_cfg').checked ? 1 : 0;
+        const seedFixed = document.getElementById('seed-fixed').checked;
+        const seedVal = document.getElementById('seed').value;
+        slidersData['seed'] = seedFixed && seedVal !== '' ? parseInt(seedVal, 10) : null;
+        slidersData['loudness_headroom_db'] = parseFloat(document.getElementById('loudness_headroom_db-text').value || '18');
+        slidersData['fade_ms'] = parseInt(document.getElementById('fade_ms-text').value || '60', 10);
+        slidersData['resample_44k'] = document.getElementById('resample_44k').checked ? 1 : 0;
+    }
 
     if (!isMelodyMode) {
         var modelSelector = document.getElementById('modelSelector')
         var modelSize = modelSelector.value;
-        socket.emit('submit_sliders', {values: slidersData, prompt:textData, model:modelSize});
+        socket.emit('submit_sliders', {values: slidersData, prompt:textData, model:modelSize, use_advanced: useAdvanced ? 1 : 0});
         return;
     }
 
@@ -46,7 +48,7 @@ function submitSliders() {
         setStatusText('请先上传旋律音频');
         return;
     }
-    socket.emit('submit_sliders', {values: slidersData, prompt:textData, model:'melody', melodyUrl:audioSrc});
+    socket.emit('submit_sliders', {values: slidersData, prompt:textData, model:'melody', melodyUrl:audioSrc, use_advanced: useAdvanced ? 1 : 0});
 }
 
 function setStatusText(msg){

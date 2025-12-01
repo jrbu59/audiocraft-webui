@@ -57,6 +57,7 @@ def handle_submit_sliders(json):
     slider_data = json['values']
     prompt = json['prompt']
     model_type = json['model']
+    use_advanced = bool(int(json.get('use_advanced', 0)))
     if not prompt:
         return
     
@@ -102,6 +103,11 @@ def handle_submit_sliders(json):
             socketio.emit('error', {"prompt": prompt, "message": "旋律文件不存在"})
             return
         melody_data = torchaudio.load(local_path)
+
+    # 若用户未展开高级设置，则忽略高级参数
+    if not use_advanced:
+        for k in ('two_step_cfg', 'seed', 'loudness_headroom_db', 'fade_ms', 'resample_44k'):
+            typed_slider_data.pop(k, None)
 
     save_last_gen_settings(model_type, prompt, typed_slider_data)
     socketio.emit('add_to_queue', {"prompt": prompt})

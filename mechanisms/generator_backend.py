@@ -138,8 +138,9 @@ def generate_audio(socketio, model_type, prompt, audio_gen_params, melody_data):
         'temperature': float(params.get('temperature', 1.2)) if params.get('temperature') is not None else None,
         'cfg_coef': float(params.get('cfg_coef', 4.0)) if params.get('cfg_coef') is not None else None,
         'duration': int(float(params.get('duration', 30))) if params.get('duration') is not None else None,
-        'two_step_cfg': bool(params.get('two_step_cfg', False)),
-        'seed': int(params['seed']) if params.get('seed') not in (None, '', 'null') else None,
+        # 高级设置：仅当键存在才生效（前端折叠时不传）
+        'two_step_cfg': bool(params['two_step_cfg']) if 'two_step_cfg' in params else None,
+        'seed': int(params['seed']) if 'seed' in params and params.get('seed') not in (None, '', 'null') else None,
     }
     # 清理 None，避免覆盖默认
     gen_kwargs = {k: v for k, v in gen_kwargs.items() if v is not None}
