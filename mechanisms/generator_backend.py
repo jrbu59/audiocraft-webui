@@ -1,6 +1,6 @@
 from .model_hijack import HijackedMusicGen
 from audiocraft.data.audio import audio_write
-import torch, re, os, json
+import torch, re, os, json, unicodedata, hashlib
 
 MODEL = None
 
@@ -16,47 +16,77 @@ def load_model(version, socketio):
         return None
     return MODEL
 
-def sanitize_filename(filename):
+def sanitize_filename(filename: str, max_length: int = 80) -> str:
+    """将任意提示词转为安全的短文件名。
+
+    处理策略：
+    - 归一化并移除非 ASCII 字符（避免多字节导致的 255 字节组件超限）。
+    - 仅保留字母、数字、空格、下划线、连字符。
+    - 压缩连续空白为单个空格，并裁剪首尾空白。
+    - 裁剪总长度到 max_length；若为空则回退为 'audio'.
     """
-    Takes a filename and returns a sanitized version safe for filesystem operations.
-    """
-    return re.sub(r'[^\w\d-]', ' ', filename)
+    if not isinstance(filename, str):
+        filename = str(filename)
+    # 归一化并移除非 ASCII 字符
+    normalized = unicodedata.normalize('NFKD', filename)
+    ascii_only = normalized.encode('ascii', 'ignore').decode('ascii')
+    # 只保留安全字符
+    ascii_only = re.sub(r'[^A-Za-z0-9_\-\s]', ' ', ascii_only)
+    # 压缩空白
+    ascii_only = re.sub(r'\s+', ' ', ascii_only).strip()
+    # 裁剪长度
+    if len(ascii_only) > max_length:
+        ascii_only = ascii_only[:max_length].rstrip()
+    # 回退名：若全为非 ASCII，使用短哈希保证可区分
+    if not ascii_only:
+        short_hash = hashlib.sha1(filename.encode('utf-8')).hexdigest()[:8]
+        return f"audio-{short_hash}"
+    return ascii_only
 
 def write_paired_json(model_type, filename, prompt, audio_gen_params):
     output_filename = f"{filename}.json"
-    
-    write_data = {"model":model_type, "prompt":prompt, "parameters":audio_gen_params}
-    
-    with open(output_filename, 'w') as outfile:
-        json.dump(write_data, outfile, indent=4)
-        
+
+    write_data = {"model": model_type, "prompt": prompt, "parameters": audio_gen_params}
+
+    with open(output_filename, 'w', encoding='utf-8') as outfile:
+        json.dump(write_data, outfile, indent=4, ensure_ascii=False)
+
     return output_filename
 
 def write_audio(model_type, prompt, audio, audio_gen_params):
     global MODEL
-    base_filename = f"static/audio/{sanitize_filename(prompt)}"
+    base_dir = "static/audio"
+    # 生成短而安全的文件名基名（不含扩展名）
+    slug = sanitize_filename(prompt, max_length=80)
+    base_filename = os.path.join(base_dir, slug)
     output_filename = f"{base_filename}.wav"
-    absolute_path = os.path.abspath(output_filename)
-    
+
     audio_tensors = audio.detach().cpu().float()
     sample_rate = MODEL.sample_rate
-    
-    max_length = 255
-    if len(absolute_path) > max_length:
-        base_filename = base_filename[:max_length - len(os.path.abspath(f"static/audio/")) - 15]
-        output_filename = f"{base_filename}.wav"
-    
+
+    # 自动去重：同名则追加 (i)
     i = 1
     while os.path.exists(output_filename):
         output_filename = f"{base_filename}({i}).wav"
         i += 1
-    
+
     audio_write(
-        output_filename, audio_tensors.squeeze(), sample_rate, strategy="loudness",
-        loudness_headroom_db=18, loudness_compressor=True, add_suffix=False)
-    
-    json_filename = write_paired_json(model_type, output_filename.rsplit('.', 1)[0], prompt, audio_gen_params)
-    
+        output_filename,
+        audio_tensors.squeeze(),
+        sample_rate,
+        strategy="loudness",
+        loudness_headroom_db=18,
+        loudness_compressor=True,
+        add_suffix=False,
+    )
+
+    json_filename = write_paired_json(
+        model_type,
+        output_filename.rsplit('.', 1)[0],
+        prompt,
+        audio_gen_params,
+    )
+
     return output_filename, json_filename
 
 def generate_audio(socketio, model_type, prompt, audio_gen_params, melody_data):

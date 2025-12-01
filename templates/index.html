@@ -11,8 +11,8 @@
 
 <body>
     {% macro slider_field(id, name, min_value, max_value, step_value, data) %}
-    <div class="field">
-        <label for="{{ name }}">{{ name }}</label>
+    <div class="field param-field" data-param="{{ id }}">
+        <label for="{{ id }}">{{ name }} <span class="info-icon" data-target="{{ id }}" title="参数说明">ℹ</span></label>
         <input type="range" id="{{ id }}" name="{{ name }}" min="{{ min_value }}" max="{{ max_value }}" step="{{ step_value }}" value="{{ data }}" oninput="updateSliderValue('{{ id }}', this.value)">
         <input type="text" id="{{ id }}-text" value="{{ data }}" class="slider-value" oninput="updateRangeValue('{{ id }}', this.value)">
     </div>
@@ -33,67 +33,40 @@
     </script>
     {% endmacro %}
     <div class="container"></div>
+        <!-- 状态栏 -->
+        <div class="status-bar" id="status-bar">
+            <div class="status-fill" id="status-fill" style="width:0%"></div>
+            <div class="status-text" id="status-text">就绪</div>
+        </div>
         <div class="third-box">
 
-            <select id="modelSelector" class="model-selector">
-                {% set model_options = ["small", "medium", "large", "melody"] %}
-                {% for option in model_options %}
-                    <option value="{{ option }}" {% if option == default_model %}selected{% endif %}>{{ option.capitalize() }}</option>
-                {% endfor %}
-            </select>            
-
-            <div id="melody-field" class="field">
-                <input type="file" id="melody" name="melody" accept="audio/*">
-                <audio id="audio-preview" controls></audio>
+            <div class="mode-switch">
+                <button id="mode-text" class="mode-button active">纯文本</button>
+                <button id="mode-melody" class="mode-button">Melody</button>
             </div>
 
-            <script>
-                document.getElementById('melody').addEventListener('change', async function(event) {
-                    var files = event.target.files;
-                    if (files.length === 0) {
-                        audioElement.src = "";
-                        return;
-                    }
-                    var file = files[0];
-                    if (file.type.startsWith('audio/')) {
-                        var formData = new FormData();
-                        formData.append('melody', file);
-                    }
-                    try {
-                        const response = await fetch('/upload_melody', {
-                            method: 'POST',
-                            body: formData,
-                        });
-                        const data = await response.json();
-                        var audioElement = document.getElementById('audio-preview');
-                        audioElement.src = data.filePath;
-                    } catch(error) {
-                        audioElement.src = "";
-                    }
-                });
-            </script>
+            <div id="text-mode-panel" class="mode-panel">
+                <label class="panel-title">选择模型</label>
+                <select id="modelSelector" class="model-selector">
+                    {% set text_model_options = ["small", "medium", "large"] %}
+                    {% for option in text_model_options %}
+                        <option value="{{ option }}" {% if option == default_model %}selected{% endif %}>{{ option.capitalize() }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    var modelSelector = document.getElementById('modelSelector');
-                    var melodyField = document.getElementById('melody-field');
-                    var audioElement = document.getElementById('audio-preview');
-                    var fileInput = document.getElementById('melody');
+            <div id="melody-mode-panel" class="mode-panel" style="display:none">
+                <label class="panel-title">上传参考旋律</label>
+                <div id="melody-field" class="field">
+                    <div class="upload-row">
+                        <input type="file" id="melody" name="melody" accept="audio/*">
+                        <span id="melody-check" class="check-icon" title="上传完成" aria-label="上传完成" style="display:none">✓</span>
+                    </div>
+                    <audio id="audio-preview" controls></audio>
+                    <div class="hint">仅支持音频文件，提交前需先上传。<span id="melody-upload-status" class="upload-status">未上传</span></div>
+                </div>
+            </div>
 
-                    function updateUI() {
-                        fileInput.value = "";
-                        audioElement.src = "";
-                        if(modelSelector.value !== 'melody') {
-                            melodyField.style.display = 'none';
-                        } else {
-                            melodyField.style.display = 'block';
-                        }
-                    }
-                    modelSelector.addEventListener('change', updateUI);
-                    updateUI();
-                });
-            </script>
-    
             <div class="group slider-group">
                 <div>
                     {{ slider_field('top_k', 'Top K', 0, 1000, 1, topk) }}

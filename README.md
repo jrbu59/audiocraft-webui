@@ -38,23 +38,28 @@ This will check for **Python 3.10**, create a virtual environment (`venv`), and 
 
 ## Run:
 
-### **Option 1: Manual Run (Classic Method)**
-Start the web UI manually using:
-```bash
-python webui.py
-```
+### **Recommended: Using the Run Script (Conda-aware)**
+Use the run script for easier execution. It now defaults to activating a Conda environment and binds the server to all interfaces (0.0.0.0):
 
-### **Option 2: Using the Run Script (Automated Execution)**
-Alternatively, use the run script for easier execution:
 - **Linux/macOS:**
   ```bash
   ./run.sh
   ```
-- **Windows:**
-  ```cmd
-  run.bat
-  ```
-This will automatically activate the appropriate environment (virtualenv or Conda) and start `webui.py`. Once the script is stopped, it ensures the environment is properly deactivated.
+- Optional flags:
+  - `--conda-env <name>`: specify Conda env name (default: `audiocraft`).
+  - Example: `./run.sh --conda-env audiocraft`
+
+The script will:
+- Initialize Conda non-interactively and activate the specified env.
+- Prefer Conda-provided C++ runtime to avoid ABI issues.
+- Start `webui.py` bound to `0.0.0.0:5000` for LAN access.
+
+### **Manual Run (Classic Method)**
+If you prefer manual run:
+```bash
+conda activate audiocraft  # or your env
+python webui.py
+```
 
 ---
 
@@ -113,3 +118,11 @@ If you want to use **Melody Mode**, select the **Melody model**, and an option t
 - Added generation history for audio outputs.
 - Removed outdated dependencies.
 - Removed deprecated parameters (`overlap` and `segments`).
+- **CXXABI / libstdc++ errors when importing av:**
+  Use conda-forge builds and prefer Conda's C++ runtime:
+  ```bash
+  conda config --add channels conda-forge
+  conda config --set channel_priority strict
+  conda install -c conda-forge av 'ffmpeg>=6' 'libstdcxx-ng>=12' 'tbb>=2021.11'
+  ```
+  Or just run `./install.sh --conda`.

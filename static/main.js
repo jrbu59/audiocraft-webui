@@ -6,30 +6,175 @@ document.addEventListener("DOMContentLoaded", function() {
     document.querySelectorAll('input[type="range"]').forEach(function(slider) {
         updateSliderValue(slider.id, slider.value);
     });
+    initModes();
+    initParamHints();
 });
 
 function submitSliders() {
     var slidersData = {};
     var textData = document.getElementById('text').value;
 
-    var modelSelector = document.getElementById('modelSelector')
-    var modelSize = modelSelector.value;
+    // 读取当前模式
+    var isMelodyMode = document.getElementById('mode-melody').classList.contains('active');
 
-    var audioElement = document.getElementById('audio-preview');
-    audioSrc = audioElement.src;
+    // 收集滑块
+    document.querySelectorAll('input[type="range"]').forEach(function(slider) {
+        slidersData[slider.id] = slider.value;
+    });
 
-    if (modelSize !== "melody" || audioSrc === "") {
-        document.querySelectorAll('input[type="range"]').forEach(function(slider) {
-            slidersData[slider.id] = slider.value;
-        });
+    if (!isMelodyMode) {
+        var modelSelector = document.getElementById('modelSelector')
+        var modelSize = modelSelector.value;
         socket.emit('submit_sliders', {values: slidersData, prompt:textData, model:modelSize});
         return;
     }
 
-    document.querySelectorAll('input[type="range"]').forEach(function(slider) {
-        slidersData[slider.id] = slider.value;
+    // Melody 模式：校验上传
+    var audioElement = document.getElementById('audio-preview');
+    var audioSrc = audioElement.src;
+    if (!audioSrc || audioSrc.trim() === "") {
+        setStatusText('请先上传旋律音频');
+        return;
+    }
+    socket.emit('submit_sliders', {values: slidersData, prompt:textData, model:'melody', melodyUrl:audioSrc});
+}
+
+function setStatusText(msg){
+    const statusText = document.getElementById('status-text');
+    if (statusText) statusText.textContent = msg;
+}
+
+function initModes(){
+    const btnText = document.getElementById('mode-text');
+    const btnMelody = document.getElementById('mode-melody');
+    const textPanel = document.getElementById('text-mode-panel');
+    const melodyPanel = document.getElementById('melody-mode-panel');
+
+    function activate(mode){
+        if (mode === 'text'){
+            btnText.classList.add('active');
+            btnMelody.classList.remove('active');
+            textPanel.style.display = '';
+            melodyPanel.style.display = 'none';
+        } else {
+            btnMelody.classList.add('active');
+            btnText.classList.remove('active');
+            melodyPanel.style.display = '';
+            textPanel.style.display = 'none';
+        }
+    }
+
+    btnText.addEventListener('click', () => activate('text'));
+    btnMelody.addEventListener('click', () => activate('melody'));
+    activate('text');
+
+    // 上传校验与缓存
+    const fileInput = document.getElementById('melody');
+    const audioElement = document.getElementById('audio-preview');
+    const uploadStatus = document.getElementById('melody-upload-status');
+    const uploadCheck = document.getElementById('melody-check');
+    fileInput.addEventListener('change', async function(event) {
+        const files = event.target.files;
+        if (files.length === 0) {
+            audioElement.src = "";
+            if (uploadStatus){ uploadStatus.textContent = '未上传'; uploadStatus.className = 'upload-status'; }
+            if (uploadCheck) uploadCheck.style.display = 'none';
+            return;
+        }
+        const file = files[0];
+        if (!file.type.startsWith('audio/')) {
+            audioElement.src = "";
+            setStatusText('请选择音频文件');
+            if (uploadStatus){ uploadStatus.textContent = '格式不支持'; uploadStatus.className = 'upload-status upload-fail'; }
+            if (uploadCheck) uploadCheck.style.display = 'none';
+            return;
+        }
+        const formData = new FormData();
+        formData.append('melody', file);
+        try {
+            const response = await fetch('/upload_melody', { method: 'POST', body: formData });
+            const data = await response.json();
+            if (data.filePath){
+                // 使用相对路径，避免提交绝对 URL 导致后端校验失败
+                const rel = data.filePath.replace(location.origin + '/', '');
+                audioElement.src = rel;
+                setStatusText('上传完成');
+                if (uploadStatus){ uploadStatus.textContent = '上传完成'; uploadStatus.className = 'upload-status upload-ok'; }
+                if (uploadCheck) uploadCheck.style.display = '';
+            } else {
+                setStatusText('上传失败');
+                if (uploadStatus){ uploadStatus.textContent = '上传失败'; uploadStatus.className = 'upload-status upload-fail'; }
+                if (uploadCheck) uploadCheck.style.display = 'none';
+            }
+        } catch(err){
+            audioElement.src = "";
+            setStatusText('上传失败');
+            if (uploadStatus){ uploadStatus.textContent = '上传失败'; uploadStatus.className = 'upload-status upload-fail'; }
+            if (uploadCheck) uploadCheck.style.display = 'none';
+        }
     });
-    socket.emit('submit_sliders', {values: slidersData, prompt:textData, model:modelSize, melodyUrl:audioSrc});
+}
+
+// 参数说明提示
+function initParamHints(){
+    const HINTS = {
+        top_k: {
+            desc: '限制采样时只从最高概率的K个token中选择。较大更丰富，较小更稳定。',
+            recommend: '推荐: 150–350'
+        },
+        top_p: {
+            desc: '核采样阈值，选择累计概率达到P的token集合。较大更随机，较小更保守。',
+            recommend: '推荐: 0.6–0.8'
+        },
+        temperature: {
+            desc: '采样温度，>1 更随机、<1 更确定。过高可能失真。',
+            recommend: '推荐: 0.9–1.3'
+        },
+        cfg_coef: {
+            desc: 'Classifier-Free Guidance 强度，数值越大越遵循提示词，但可能牺牲自然度。',
+            recommend: '推荐: 3.5–5.0'
+        },
+        duration: {
+            desc: '生成时长（秒）。越长耗时和显存越高。',
+            recommend: '推荐: 10–30s 试验，满意后再加长'
+        }
+    };
+
+    let tooltipEl = null;
+    function ensureTooltip(){
+        if (!tooltipEl){
+            tooltipEl = document.createElement('div');
+            tooltipEl.className = 'tooltip';
+            document.body.appendChild(tooltipEl);
+        }
+        return tooltipEl;
+    }
+    function showTooltip(target, text){
+        const el = ensureTooltip();
+        el.textContent = text;
+        const rect = target.getBoundingClientRect();
+        const top = rect.top + window.scrollY - el.offsetHeight - 8;
+        const left = rect.left + window.scrollX + rect.width/2 - Math.min(260, el.offsetWidth)/2;
+        el.style.top = (top < 0 ? rect.bottom + window.scrollY + 8 : top) + 'px';
+        el.style.left = Math.max(8, left) + 'px';
+        el.style.display = 'block';
+    }
+    function hideTooltip(){ if (tooltipEl) tooltipEl.style.display = 'none'; }
+
+    document.querySelectorAll('.param-field').forEach(function(field){
+        const id = field.getAttribute('data-param');
+        const infoIcon = field.querySelector('.info-icon');
+        const data = HINTS[id];
+        if (!data || !infoIcon) return;
+        const text = `${data.desc}  ${data.recommend}`;
+        infoIcon.addEventListener('mouseenter', () => showTooltip(infoIcon, text));
+        infoIcon.addEventListener('mouseleave', hideTooltip);
+        infoIcon.addEventListener('mousemove', (e) => {
+            if (!tooltipEl || tooltipEl.style.display !== 'block') return;
+            tooltipEl.style.top = (e.pageY + 12) + 'px';
+            tooltipEl.style.left = (e.pageX + 12) + 'px';
+        });
+    });
 }
 
 // ADD TO QUEUE
@@ -138,6 +283,36 @@ socket.on('progress', function(data) {
         firstPromptItem.style.background = `linear-gradient(to right, ${completionColor} ${progress_value}%, transparent ${progress_value}%)`;
         firstPromptItem.querySelector('.audio-item-text').style.textShadow = '1px 3px 6px black';
     }
+    // 更新状态栏
+    const statusFill = document.getElementById('status-fill');
+    const statusText = document.getElementById('status-text');
+    if (statusFill) statusFill.style.width = `${Math.min(100, Math.max(0, progress_value))}%`;
+    if (statusText) statusText.textContent = `生成中 ${Math.floor(progress_value)}%`;
+});
+
+// 简短状态与错误提示
+socket.on('status', function(data) {
+    const statusFill = document.getElementById('status-fill');
+    const statusText = document.getElementById('status-text');
+    if (!statusFill || !statusText) return;
+    if (data.state === 'started') {
+        statusFill.style.width = '2%';
+        statusText.textContent = '开始生成';
+    } else if (data.state === 'finished') {
+        statusFill.style.width = '100%';
+        statusText.textContent = '完成';
+        setTimeout(() => { statusFill.style.width = '0%'; statusText.textContent = '就绪'; }, 1200);
+    } else if (data.state === 'error') {
+        statusText.textContent = '出错';
+        statusFill.style.width = '0%';
+    }
+});
+
+socket.on('error', function(data) {
+    const statusText = document.getElementById('status-text');
+    if (statusText) statusText.textContent = `错误: ${data.message}`;
+    // 可选：弹窗提示
+    console.error('生成错误: ', data.message);
 });
 
 function addAudiosToList(pairs) {

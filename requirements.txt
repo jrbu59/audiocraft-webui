@@ -2,5 +2,5 @@ flask
 numpy
 git+https://git@github.com/facebookresearch/audiocraft#egg=audiocraft
 flask_socketio
-torchaudio
+transformers==4.39.3
 ffmpeg

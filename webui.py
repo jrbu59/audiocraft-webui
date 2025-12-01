@@ -1,6 +1,7 @@
 from flask_socketio import SocketIO, emit
 from flask import Flask, render_template, request, jsonify, send_from_directory
 import logging, os, queue, threading, json
+from urllib.parse import urlparse
 import torchaudio
 from mechanisms.generator_backend import generate_audio
 
@@ -14,9 +15,17 @@ logging.getLogger('socketio').setLevel(logging.ERROR)
 def worker_process_queue():
     while True:
         model_type, prompt, slider_data, melody_data = pending_queue.get()
-        filename, json_filename = generate_audio(socketio, model_type, prompt, slider_data, melody_data)
-        socketio.emit('on_finish_audio', {"prompt":prompt, "filename":filename, "json_filename":json_filename})
-        pending_queue.task_done()
+        try:
+            socketio.emit('status', {"prompt": prompt, "state": "started"})
+            filename, json_filename = generate_audio(socketio, model_type, prompt, slider_data, melody_data)
+            socketio.emit('on_finish_audio', {"prompt": prompt, "filename": filename, "json_filename": json_filename})
+            socketio.emit('status', {"prompt": prompt, "state": "finished"})
+        except Exception as e:
+            # 简短错误提示
+            socketio.emit('error', {"prompt": prompt, "message": str(e)[:200]})
+            socketio.emit('status', {"prompt": prompt, "state": "error"})
+        finally:
+            pending_queue.task_done()
         
 def save_last_gen_settings(model_type, prompt, audio_gen_params):
     os.makedirs("settings", exist_ok=True)
@@ -56,11 +65,24 @@ def handle_submit_sliders(json):
     melody_data = None
     
     melody_url = json.get('melodyUrl', None)
-    if melody_url:
-        melody_data = torchaudio.load(melody_url)
+    # Melody 模式后端校验：必须有有效文件
+    if model_type == 'melody':
+        if not melody_url:
+            socketio.emit('error', {"prompt": prompt, "message": "请先上传旋律音频"})
+            return
+        # 将 URL 转成本地相对路径并限制到 static/temp 目录
+        parsed = urlparse(melody_url)
+        local_path = parsed.path.lstrip('/') if parsed.scheme else melody_url
+        if not local_path.startswith('static/temp/'):
+            socketio.emit('error', {"prompt": prompt, "message": "旋律路径不合法"})
+            return
+        if not os.path.exists(local_path):
+            socketio.emit('error', {"prompt": prompt, "message": "旋律文件不存在"})
+            return
+        melody_data = torchaudio.load(local_path)
 
     save_last_gen_settings(model_type, prompt, slider_data)
-    socketio.emit('add_to_queue', {"prompt":prompt})
+    socketio.emit('add_to_queue', {"prompt": prompt})
     pending_queue.put((model_type, prompt, slider_data, melody_data))
     
 @socketio.on('connect')
@@ -142,4 +164,4 @@ if __name__ == '__main__':
     if not os.path.exists('static/temp'):
         os.makedirs('static/temp')
     threading.Thread(target=worker_process_queue, daemon=True).start()
-    socketio.run(app)
+    socketio.run(app, host='0.0.0.0')
