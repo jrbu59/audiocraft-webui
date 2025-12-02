@@ -226,4 +226,4 @@ if __name__ == '__main__':
     if not os.path.exists('static/temp'):
         os.makedirs('static/temp')
     threading.Thread(target=worker_process_queue, daemon=True).start()
-    socketio.run(app, host='0.0.0.0')
+    socketio.run(app, host='0.0.0.0', debug=False, use_reloader=False, allow_unsafe_werkzeug=True)
